@@ -1,0 +1,204 @@
+<!DOCTYPE HTML>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="zh-TW"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="zh-TW"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="zh-TW"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="zh-TW"> <!--<![endif]-->
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>卓遠教育顧問 | 落點分析</title>
+	<link rel="stylesheet" href="css/base.css">
+	<link rel="stylesheet" href="css/skeleton.css">
+	<link rel="stylesheet" href="css/layout.css">
+	<link rel="stylesheet" href="css/jquery-ui.min.css">
+
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+</head>
+<body>
+	<div class="container">
+		<div class="wrapper row">
+			<div class="menu clearfix">
+				<a class="item" href="#" data-bind="click: sendMail">郵寄分析結果</a>
+				<a class="item short-name" href="#" data-bind="click: showCla">選學群</a>
+				<a class="item short-name" href="#" data-bind="click: showTyp">選學校類型</a>
+				<a class="item short-name" href="#" data-bind="click: showSch">選學校</a>
+				<a class="item" href="#" data-bind="click: showBri, visible: displayMode() == 'detail'">簡略資訊</a>
+				<a class="item" href="#" data-bind="click: showDet, visible: displayMode() == 'brief'">完整資訊</a>
+			</div>
+			<div class="title columns sixteen">
+				<a href="http://www.urfuture.com.tw" target="_blank">
+					<img class="header" src="images/logo.png" alt="卓遠教育顧問中心" />
+				</a>
+			</div>
+
+			<div id="classifier" class="columns four">
+				<div class="cwrapper">
+					<p class="title long-name">學群</p>
+					<div class="content">
+						<input class="filter" placeholder="依名稱過濾" data-bind="value: classesKeyWord, valueUpdate: 'keyup'"><br>
+						<!-- ko foreach: classes -->
+						<!-- ko if: !hide() -->
+						<input type="checkbox" data-bind="checked: checked, attr: {'id': 'sel1-cla-'+cid}">
+						<label data-bind="text: name, attr: {for: 'sel1-cla-'+cid}, css: { checked: checked }"></label><br>
+						<!-- /ko -->
+						<!-- /ko -->
+					</div>
+				</div>
+				<div class="cwrapper">
+					<p class="title long-name">類型</p>
+					<div class="content">
+						<input id="sel1-type-1" name="type" type="radio" value="1" data-bind="checked: schoolType">
+						<label class="checked" for="sel1-type-1">國立大學</label><br>
+						<input id="sel1-type-2" name="type" type="radio" value="2" data-bind="checked: schoolType">
+						<label class="checked" for="sel1-type-2">私立大學</label><br>
+						<input id="sel1-type-3" name="type" type="radio" value="3" data-bind="checked: schoolType" checked>
+						<label class="checked" for="sel1-type-3">所有大學</label><br>
+					</div>
+				</div>
+				<div class="cwrapper">
+					<p class="title long-name">學校</p>
+					<div class="content">
+						<input class="filter" placeholder="依名稱過濾" data-bind="value: schoolsKeyWord, valueUpdate: 'keyup'"><br>
+						<!-- ko foreach: schools -->
+						<!-- ko if: !hide() -->
+						<input type="checkbox" data-bind="checked: checked, attr: {'id': 'sel1-sch-'+sid}">
+						<label data-bind="text: name, attr: {for: 'sel1-sch-'+sid}, css: { checked: checked }"></label><br>
+						<!-- /ko -->
+						<!-- /ko -->
+					</div>
+				</div>
+
+			</div>
+			<div id="school-detail" class="columns twelve">
+				<!-- ko if: results().length == 0 && initialized() -->
+					<p id="not-found"> 查無結果 </p>
+				<!-- /ko -->
+				<!-- ko foreach: results -->
+				<div class="row" data-bind="with: info, attr: { 'id': 'school-detail-'+$index()}">
+					<div class="title">
+						<span data-bind="text: schoolName"> </span> 
+						<span data-bind="text: departmentName"> </span>
+						<strong data-bind="visible: $parent.dist.min < 1"><span class="long-name">(錄取</span>邊緣<span class="long-name">)</span></strong>
+					</div>
+						<div class="quota" data-bind="visible: $root.displayMode() == 'detail'">
+							<strong><span class="long-name">名額</span>異動</strong><br />
+							<span data-bind="text: p2ExpectedPass"></span>-<span data-bind="text: acceptNum"></span>
+						</div>
+						<!-- ko if: p1Subject -->
+						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail'">
+							<strong><span class="long-name">篩選</span>順序1</strong><br />
+							<dl>
+								<dt> 科目 </dt> <dd data-bind="text: p1Subject"></dd>
+								<dt> 倍率 </dt> <dd><span class="short-name">倍率</span><span data-bind="text: p1Ratio"></span></dd>
+								<dt> 去年 </dt> <dd><span class="short-name">去年</span><span data-bind="text: p1Lb"></span> </dd>
+							</dl>
+						</div>
+						<!-- /ko -->
+						<!-- ko if: p2Subject -->
+						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail'">
+							<strong><span class="long-name">篩選</span>順序2</strong><br />
+							<dl>
+								<dt> 科目 </dt> <dd data-bind="text: p2Subject"></dd>
+								<dt> 倍率 </dt> <dd><span class="short-name">倍率</span><span data-bind="text: p2Ratio"></span></dd>
+								<dt> 去年 </dt> <dd><span class="short-name">去年</span><span data-bind="text: p2Lb"></span> </dd>
+							</dl>
+						</div>
+						<!-- /ko -->
+						<!-- ko if: p3Subject -->
+						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail'">
+							<strong><span class="long-name">篩選</span>順序3</strong><br />
+							<dl>
+								<dt> 科目 </dt> <dd data-bind="text: p3Subject"></dd>
+								<dt> 倍率 </dt> <dd><span class="short-name">倍率</span><span data-bind="text: p3Ratio"></span></dd>
+								<dt> 去年 </dt> <dd><span class="short-name">去年</span><span data-bind="text: p3Lb"></span> </dd>
+							</dl>
+						</div>
+						<!-- /ko -->
+						<!-- ko if: p4Subject -->
+						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail'">
+							<strong><span class="long-name">篩選</span>順序4</strong><br />
+							<dl>
+								<dt> 科目 </dt> <dd data-bind="text: p4Subject"></dd>
+								<dt> 倍率 </dt> <dd><span class="short-name">倍率</span><span data-bind="text: p4Ratio"></span></dd>
+								<dt> 去年 </dt> <dd><span class="short-name">去年</span><span data-bind="text: p4Lb"></span> </dd>
+							</dl>
+						</div>
+						<!-- /ko -->
+						<!-- ko if: p5Subject -->
+						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail'">
+							<strong><span class="long-name">篩選</span>順序5</strong><br />
+							<dl>
+								<dt> 科目 </dt> <dd data-bind="text: p5Subject"></dd>
+								<dt> 倍率 </dt> <dd><span class="short-name">倍率</span><span data-bind="text: p5Ratio"></span></dd>
+								<dt> 去年 </dt> <dd><span class="short-name">去年</span><span data-bind="text: p5Lb"></span> </dd>
+							</dl>
+						</div>
+						<!-- /ko -->
+						<div class="toeic" data-bind="visible: toeic == 1 && $root.displayMode() == 'detail'">
+							<strong>有</strong><br />TOEIC<span class="long-name"><br />第二階段<br />加分</span>
+						</div>
+				</div>
+				<!-- /ko -->
+			</div>
+		</div>
+	</div>
+	<div class="hide">
+		<div class="cwrapper" id="sel-cla">
+			<p class="title long-name">學群</p>
+			<div class="content">
+				<input class="filter" placeholder="依名稱過濾" data-bind="value: classesKeyWord, valueUpdate: 'keyup'"><br>
+				<!-- ko foreach: classes -->
+				<!-- ko if: !hide() -->
+				<input type="checkbox" data-bind="checked: checked, attr: {'id': 'sel7-cla-'+cid}">
+				<label data-bind="text: name, attr: {for: 'sel7-cla-'+cid}, css: { checked: checked }"></label><br>
+				<!-- /ko -->
+				<!-- /ko -->
+			</div>
+		</div>
+		<div class="cwrapper" id="sel-typ">
+			<p class="title long-name">類型</p>
+			<div class="content">
+				<input id="sel7-type-1" name="type7" type="radio" value="1" data-bind="checked: schoolType">
+				<label class="checked" for="sel7-type-1">國立大學</label><br>
+				<input id="sel7-type-2" name="type7" type="radio" value="2" data-bind="checked: schoolType">
+				<label class="checked" for="sel7-type-2">私立大學</label><br>
+				<input id="sel7-type-3" name="type7" type="radio" value="3" data-bind="checked: schoolType" checked>
+				<label class="checked" for="sel7-type-3">所有大學</label><br>
+			</div>
+		</div>
+		<div class="cwrapper" id="sel-sch">
+			<p class="title long-name">學校</p>
+			<div class="content">
+				<input class="filter" placeholder="依名稱過濾" data-bind="value: schoolsKeyWord, valueUpdate: 'keyup'"><br>
+				<!-- ko foreach: schools -->
+				<!-- ko if: !hide() -->
+				<input type="checkbox" data-bind="checked: checked, attr: {'id': 'sel7-sch-'+sid}">
+				<label data-bind="text: name, attr: {for: 'sel7-sch-'+sid}, css: { checked: checked }"></label><br>
+				<!-- /ko -->
+				<!-- /ko -->
+			</div>
+		</div>
+	</div>
+	<div id="mailing" class="hide">
+		<p class="status">
+			<span data-bind="text: mailStatus"></span>
+			<img src="images/loader.gif" data-bind="visible: mailStatus() == '傳送中'" />
+		</p>
+	</div>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+	<script src="//ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1.js"></script>
+	<script src="js/html5placeholder.jquery.js"></script>
+	<script src="js/jquery-ui.min.js"></script>
+	<script src="js/predict.js"></script>
+	<script type="text/javascript">
+		$(function() {
+			$('input').placeholder();
+		});
+	</script>
+
+</body>
+</html>
+
+
