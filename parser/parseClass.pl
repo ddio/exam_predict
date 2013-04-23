@@ -1,10 +1,12 @@
 #!/usr/bin/perl
 
-$class = "departments (id,schoolId,type,schoolName,departmentName,class1)";
+$class = "classes (id,name)";
 $pre = 'INSERT OR REPLACE INTO '.$class.' VALUES (';
 $suf = ');';
 
 print "BEGIN TRANSACTION;\n";
+
+%classes = (  );
 
 for( $ai = 0; $ai <= $#ARGV; $ai++ ) {
 
@@ -28,7 +30,11 @@ for( $ai = 0; $ai <= $#ARGV; $ai++ ) {
 		$l =~ s/"//g;
 		my ($school,$class1) = split(/,/, $l);
 
-		$class1 =~ s/(\d+).*$/$1/;
+		my $classId = $class1;
+		my $className = $class1;
+
+		$classId =~ s/(\d+).+$/$1/;
+		$className =~ s/\d+.//;
 
 		$school =~ /^([0-9A-Z]{3})([0-9A-Z]{3})(.*大學|.*學院|.*學校)(.*)$/;
 
@@ -44,11 +50,12 @@ for( $ai = 0; $ai <= $#ARGV; $ai++ ) {
 
 		if( $schoolName =~ /^$/ || $depName =~ /^$/ ) {
 			print STDERR "mismatch [$ln] $l in file $ARGV[$ai]\n"
-		} else {
+		} elsif( !exists $classes{$classId} ) {
+
+			$classes{$classId} = $className;
 
 			print $pre
-					."'$schoolId$depId','$schoolId',$type,"
-					."'$schoolName','$depName',$class1"
+					."$classId,'$className'"
 				.$suf."\n";
 		}
 	}

@@ -4,32 +4,24 @@ use File::Basename;
 use DBI;
 use Data::Dumper;
 
-$class = "criteria (sex,departmentId,year,".
-					"p2ExpectedPass,p1ExpectedPass,p1RealPass," .
-					"lbCh,lbEn,lbMa,lbSo,lbNa,lbTo,".
-					"p1Subject,p1Ratio,p1Lb,".
-					"p2Subject,p2Ratio,p2Lb,".
-					"p3Subject,p3Ratio,p3Lb,".
-					"p4Subject,p4Ratio,p4Lb,".
-					"p5Subject,p5Ratio,p5Lb,".
-					"p0Lb,p2RealPass,p2SubPass,p2LbCount,toeic)";
+$class = "criteria (departmentId,year,".
+					"lbCh,lbEn,lbMa,lbS1,lbS2,lbTo,".
+					"p1Subject,p1Lb,".
+					"p2Subject,p2Lb,".
+					"p3Subject,p3Lb,".
+					"p4Subject,p4Lb,".
+					"p5Subject,p5Lb,".
+					"p0Lb)";
+
 $pre = 'INSERT OR REPLACE INTO '.$class.' VALUES (';
 $suf = ');';
 
-%std = ( "頂" => 0, "前"=>1, "均"=>2, "後"=>3, "底"=>4, "" => 5 );
+%std = ( "全" => 0, "後"=>1, "--"=>2 );
 
 %departments = ();
 
-$dbh = DBI->connect( "dbi:SQLite:dbname=../../db/examPredict.sqlite" ) || die "Cannot connect: $DBI::errstr";
-$scQuery = $dbh->prepare( 'select * from departments' );
-$scQuery->execute();
-
-while( @result = $scQuery->fetchrow_array() ) {
-	$departments{ $result[1].$result[2] } = $result[0];
-}
-
 print "BEGIN TRANSACTION;\n";
-#print Dumper(\%departments);
+
 for( $ai = 0; $ai <= $#ARGV; $ai++ ) {
 
 	unless ( -e $ARGV[$ai] ) { 
@@ -37,82 +29,118 @@ for( $ai = 0; $ai <= $#ARGV; $ai++ ) {
 		next;
 	}
 	
-	$schoolName = basename($ARGV[$ai]);
-	$schoolName =~ s/.csv$//;
-
 	open FILE, $ARGV[$ai];
+	<FILE>;
+	<FILE>;
 
-	while(<FILE>) {
-		chomp;
-		s/ |\r//g;
-		s/}/)/g;
-		s/{/(/g;
-		if ( /^ *$/ ) { next; }
-		if ( /^,*$/ ) { next; }
-		@column = split /,/;
+	my $ln = 3;
 
-		if ( $column[1] =~ /100/ ) { next; }
-
-		if ( $column[1] =~ /$ *^/ || $column[2] =~ /$ *^/ ) { 
-#			print STDERR "skipping empty $schoolName/$column[0]: $column[1]\n";
-			next; 
-		}
-
-		if ( $column[0] =~ /^(.*)（(男|女)）/ ) {
-			$dep = $1;
-#			print STDERR "dectect sex $schoolName $dep\n";
-			$column[0] = "1,'$dep'" if $2 =~ /男/;
-			$column[0] = "2,'$dep'" if $2 =~ /女/;
-		} else {
-#			$column[0] =~ s/^([^（]+)[（]?.*$/3,'$1'/;
-			$column[0] = "3,'$column[0]'";
-		}
-		$column[0] =~ /'(.*)'/;
-		$dep = $schoolName.$1;
-		unless ( exists( $departments{$dep} ) ) {
-#			print STDERR "no such dept $dep\n";
-			next;
-		}
-		$column[0] =~ s/'.*'/$departments{$dep}/;
+	while(my $l = <FILE>) {
 	
-		$column[2] =~ s/^[^0-9]*(\d+)[^0-9]*$/$1/;	#招生名額
+		$ln++;
 
-		# lb *
-		$column[5] = $std{ $column[5] };
-		$column[6] = $std{ $column[6] };
-		$column[7] = $std{ $column[7] };
-		$column[8] = $std{ $column[8] };
-		$column[9] = $std{ $column[9] };
-		$column[10] = $std{ $column[10] };
+		chomp $l;
+		if ( $l =~ /^$/ ) { next; }
+		$l =~ s/"//g;
+		@c = split(/,/, $l);
 
-		$column[11] =~ s/\(([.0-9]+)\)(.*)/'$2',$1/;
-#		$column[11] =~ s/總/國+英+數+自+社/;
-		$column[13] =~ s/\(([.0-9]+)\)(.*)/'$2',$1/;
-#		$column[13] =~ s/總/國+英+數+自+社/;
-		$column[15] =~ s/\(([.0-9]+)\)(.*)/'$2',$1/;
-#		$column[15] =~ s/總/國+英+數+自+社/;
-		$column[17] =~ s/\(([.0-9]+)\)(.*)/'$2',$1/;
-#		$column[17] =~ s/總/國+英+數+自+社/;
-		$column[19] =~ s/\(([.0-9]+)\)(.*)/'$2',$1/;
-#		$column[19] =~ s/總/國+英+數+自+社/;
+		$c[0] =~ /^([0-9A-Z]{6})/;
+		my $depId = $1;
+		my $acceptNum = $c[2];
+		my $lbCh = $std{ $c[4] };
+		my $lbEn = $std{ $c[5] };
+		my $lbMa = $std{ $c[6] };
+		my $lbS1 = $std{ $c[7] };
+		my $lbS2 = $std{ $c[8] };
+		my $lbTo = $std{ $c[9] };
 
-		for( $i = 11; $i <= 20; $i++ ) {
-			if( $column[$i] =~ /^$/ ) {
-				$column[$i] = "NULL,NULL" if $i % 2 == 1;
-				$column[$i] = "NULL" if $i % 2 == 0;
-			}
+		my $p1Subject = 'NULL';
+		my $p1Lb = 'NULL';
+		my $p2Subject = 'NULL';
+		my $p2Lb = 'NULL';
+		my $p3Subject = 'NULL';
+		my $p3Lb = 'NULL';
+		my $p4Subject = 'NULL';
+		my $p4Lb = 'NULL';
+		my $p5Subject = 'NULL';
+		my $p5Lb = 'NULL';
+		my $p0Lb = 'NULL';
+
+		if( $c[16] =~ /^(.*)\((\d+)\)/ ) {
+			$p1Subject = $1;
+			$p1Lb = $2;
+			$p1Subject =~ s/英文/en,/g;
+			$p1Subject =~ s/數學/ma,/g;
+			$p1Subject =~ s/國文/ch,/g;
+			$p1Subject =~ s/專一/s1,/g;
+			$p1Subject =~ s/專二/s2,/g;
+			$p1Subject =~ s/總級分/ch,en,ma,s1,s2,/g;
+			$p1Subject =~ s/(.*)/'$1'/;
 		}
 
-		$column[21] =~ s/-|－|—|^0$|不足額/NULL/; #超額篩選
-		$column[21] =~ s/<|u//;	#超額篩選
-		$column[23] =~ s/^$/0/;	#備取人數
-		$column[24] =~ s/備.*(\d+)/$1/;	# 分發最低標準
-		$column[24] =~ s/正取|IE取|無/0/;
+		if( $c[17] =~ /^(.*)\((\d+)\)/ ) {
+			$p2Subject = $1;
+			$p2Lb = $2;
+			$p2Subject =~ s/英文/en,/g;
+			$p2Subject =~ s/數學/ma,/g;
+			$p2Subject =~ s/國文/ch,/g;
+			$p2Subject =~ s/專一/s1,/g;
+			$p2Subject =~ s/專二/s2,/g;
+			$p2Subject =~ s/總級分/ch,en,ma,s1,s2,/g;
+			$p2Subject =~ s/(.*)/'$1'/;
+		}
+		if( $c[18] =~ /^(.*)\((\d+)\)/ ) {
+			$p3Subject = $1;
+			$p3Lb = $2;
+			$p3Subject =~ s/英文/en,/g;
+			$p3Subject =~ s/數學/ma,/g;
+			$p3Subject =~ s/國文/ch,/g;
+			$p3Subject =~ s/專一/s1,/g;
+			$p3Subject =~ s/專二/s2,/g;
+			$p3Subject =~ s/總級分/ch,en,ma,s1,s2,/g;
+			$p3Subject =~ s/(.*)/'$1'/;
+		}
+		if( $c[19] =~ /^(.*)\((\d+)\)/ ) {
+			$p4Subject = $1;
+			$p4Lb = $2;
+			$p4Subject =~ s/英文/en,/g;
+			$p4Subject =~ s/數學/ma,/g;
+			$p4Subject =~ s/國文/ch,/g;
+			$p4Subject =~ s/專一/s1,/g;
+			$p4Subject =~ s/專二/s2,/g;
+			$p4Subject =~ s/總級分/ch,en,ma,s1,s2,/g;
+			$p4Subject =~ s/(.*)/'$1'/;
+		}
+		if( $c[20] =~ /^(.*)\((\d+)\)/ ) {
+			$p5Subject = $1;
+			$p5Lb = $2;
+			$p5Subject =~ s/英文/en,/g;
+			$p5Subject =~ s/數學/ma,/g;
+			$p5Subject =~ s/國文/ch,/g;
+			$p5Subject =~ s/專一/s1,/g;
+			$p5Subject =~ s/專二/s2,/g;
+			$p5Subject =~ s/總級分/ch,en,ma,s1,s2,/g;
+			$p5Subject =~ s/(.*)/'$1'/;
+		}
+		if( $c[21] =~ /^(.*)\((\d+)\)/ ) {
+			$p0Lb = $2;
+		}
 
-		$column[25] =~ s/V/1/;	#toeic
-		$column[25] =~ s/^$/0/;
+		if( $p1Subject =~ /NULL/ && $p0Lb =~ /NULL/ ) {
+			print STDERR "mismatch $l in file $ARGV[$ai]\n"
+		} else {
 
-		print $pre.join(',',@column).$suf."\n";
+			print 	$pre.
+					"'$depId', 101, ".
+					"$lbCh, $lbEn, $lbMa, $lbS1, $lbS2, $lbTo, ".
+					"$p1Subject, $p1Lb,". 
+					"$p2Subject, $p2Lb,". 
+					"$p3Subject, $p3Lb,". 
+					"$p4Subject, $p4Lb,". 
+					"$p5Subject, $p5Lb,". 
+					"$p0Lb". 
+					$suf."\n";
+		}
 	}
 
 	close FILE
