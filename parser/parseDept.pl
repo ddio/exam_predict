@@ -30,12 +30,12 @@ for( $ai = 0; $ai <= $#ARGV; $ai++ ) {
 
 		$class1 =~ s/(\d+).*$/$1/;
 
-		$school =~ /^([0-9A-Z]{3})([0-9A-Z]{3})(.*大學|.*學院|.*學校)(.*)$/;
+		$school =~ /^([0-9A-Z]{3})([0-9A-Z]{3})(.*大學|.*學院(）)?|.*學校)(.*)$/;
 
 		my $schoolId = $1;
 		my $depId = $2;
 		my $schoolName = $3;
-		my $depName = $4;
+		my $depName = $5;
 		my $type = 2;
 
 		if( $schoolName =~ /國立/ ) {
