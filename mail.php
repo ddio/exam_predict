@@ -32,7 +32,7 @@ function genHtml() {
 		</div>
 		<div class="quota" style="float:left;width:13%;">
 			<strong><span class="long-name">名額</span>異動</strong><br />
-			<span><?php echo $in['p2ExpectedPass']?></span>-<span><? echo $in['acceptNum'] ?></span>
+			<span><?php echo '??'?></span>-<span><? echo '??' ?></span>
 		</div>
 		<?php for( $phase = 1; $phase <= 5; $phase++ ) : ?>
 		<?php $p = 'p'.$phase; ?>
@@ -51,11 +51,6 @@ function genHtml() {
 			</div>
 		<?php endif; ?>
 		<?php endfor; ?>
-		<?php if( $in['toeic'] == 1 ): ?>
-			<div class="toeic" style="float:left;width:12%;">
-				<strong>有</strong><br />TOEIC<span class="long-name"><br />第二階段<br />加分</span>
-			</div>
-		<?php endif; ?>
 	</div>
 	<div style="clear: both"></div>
 <?php endforeach; ?>
