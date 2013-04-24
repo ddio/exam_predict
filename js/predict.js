@@ -173,8 +173,9 @@ function predictVM() {
 			},
 			success: function( data ) {
 				self.initialized(true);
-				if( data.results )
+				if( data.results ) {
 					self.results( data.results );
+				}
 			},
 			dataType: 'json',
 			cache: true
