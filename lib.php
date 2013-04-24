@@ -8,34 +8,36 @@ if( !isset( $_SESSION['phase'] ) ) {
 	$_SESSION['classes'] = null;
 	$_SESSION['phone'] = null;
 	$_SESSION['ch'] = 0;
-	$_SESSION['chStd'] = 5;
+	$_SESSION['chStd'] = 2;
 	$_SESSION['en'] = 0;
-	$_SESSION['enStd'] = 5;
+	$_SESSION['enStd'] = 2;
 	$_SESSION['ma'] = 0;
-	$_SESSION['maStd'] = 5;
+	$_SESSION['maStd'] = 2;
 	$_SESSION['na'] = 0;
-	$_SESSION['naStd'] = 5;
+	$_SESSION['naStd'] = 2;
 	$_SESSION['so'] = 0;
-	$_SESSION['soStd'] = 5;
+	$_SESSION['soStd'] = 2;
 	$_SESSION['to'] = 0;
-	$_SESSION['toStd'] = 5;
+	$_SESSION['toStd'] = 2;
 }
 
 $User = array();
 $RECORD_LIMIT = 50;
-$PredictDB = new PDO('sqlite:../../db/examPredict.sqlite');
+$PredictDB = new PDO('sqlite:../../db/techPredict.sqlite');
 
 // not used..
 $StdMap = array( 
 	'ch' => array( 13,12,11,9,7,0 ),
 	'en' => array( 14,13,10,6,4,0 ),
 	'ma' => array( 12,10, 7,4,3,0 ),
-	'na' => array( 14,13,11,9,7,0 ),
-	'so' => array( 13,11, 9,6,5,0 ),
+	's1' => array( 14,13,11,9,7,0 ),
+	's2' => array( 13,11, 9,6,5,0 ),
 	'to' => array( 63,57,47,36,27,0 )
 );
-	
-$SubjectMap = array( '國'=>'ch', '英'=>'en', '數'=>'ma', '自'=>'na', '社'=>'so' );
+
+
+$SubjectMap = array( '國'=>'ch', '英'=>'en', '數'=>'ma', '一'=>'s1', '二'=>'s2' );
+/*
 $ClassMap = array( 
 	1 => '大眾傳播學群',
 	2 => '工程學群',
@@ -56,7 +58,7 @@ $ClassMap = array(
 	17 => '藝術學群',
 	18 => '遊憩與運動學群',
 	19 => '不分系學群' );
-
+ */
 
 function ToHome() {
 	header( 'Location: user.html' );
@@ -86,15 +88,15 @@ function PassPhase( $phase, $row, $grade ) {
 	$myGrade = 0;
 
 	if( $row[$subjectCol] != null ) {
-		$subjectStr = str_replace( '總', '國+英+數+自+社', $row[$subjectCol] );
+		$subjectStr = str_replace( '總', '國+英+數+一+二', $row[$subjectCol] );
 		$subjects = explode( '+', $subjectStr );
 		foreach( $subjects as $subject ) {
 			if( isset( $SubjectMap[$subject] ) ) {
-				$myGrade += $grade[ $SubjectMap[ $subject ] ];
+				$myGrade += $grade[ $SubjectMap[$subject] ];
 			}
 		}
 
-		return ($myGrade - $row[$lbCol])/count($subjects);
+		return ($myGrade - $row[$lbCol])/(count($subjects)-1);
 	} else {
 		return null;
 	}
@@ -122,20 +124,27 @@ function GetPredict( $schools, $classes, $schoolType ) {
 		'enStd' => $_SESSION['enStd'],
 		'ma' => $_SESSION['ma']+1,
 		'maStd' => $_SESSION['maStd'],
-		'na' => $_SESSION['na']+1,
-		'naStd' => $_SESSION['naStd'],
-		'so' => $_SESSION['so']+1,
-		'soStd' => $_SESSION['soStd'],
+		's1' => $_SESSION['s1']+1,
+		's1Std' => $_SESSION['s1Std'],
+		's2' => $_SESSION['s2']+1,
+		's2Std' => $_SESSION['s2Std'],
 		'toStd' => $_SESSION['toStd']
 	);
 
 	$myGrade['to'] = $myGrade['ch'] + 
 		$myGrade['en'] +
 		$myGrade['ma'] +
-		$myGrade['na'] +
-		$myGrade['so'];
+		$myGrade['s1'] +
+		$myGrade['s2'];
 
-	$columns = 'd.schoolName,d.departmentName,d.acceptNum,sex,p2ExpectedPass,p1ExpectedPass,p1RealPass,lbCh,lbEn,lbMa,lbSo,lbNa,lbTo,p1Subject,p1Ratio,p1Lb,p2Subject,p2Ratio,p2Lb,p3Subject,p3Ratio,p3Lb,p4Subject,p4Ratio,p4Lb,p5Subject,p5Ratio,p5Lb,p0Lb,p2RealPass,p2SubPass,p2LbCount,toeic';
+	$columns = 'd.schoolName,d.departmentName,'.
+		'lbCh,lbEn,lbMa,lbS1,lbS2,lbTo,'.
+		'p1Subject,p1Ratio,p1Lb,'.
+		'p2Subject,p2Ratio,p2Lb,'.
+		'p3Subject,p3Ratio,p3Lb,'.
+		'p4Subject,p4Ratio,p4Lb,'.
+		'p5Subject,p5Ratio,p5Lb,'.
+		'p0Lb';
 
 	$sql = '';
 
@@ -144,8 +153,8 @@ function GetPredict( $schools, $classes, $schoolType ) {
 	$sql .= " and c.lbCh >= ".$myGrade['chStd'];
 	$sql .= " and c.lbEn >= ".$myGrade['enStd'];
 	$sql .= " and c.lbMa >= ".$myGrade['maStd'];
-	$sql .= " and c.lbNa >= ".$myGrade['naStd'];
-	$sql .= " and c.lbSo >= ".$myGrade['soStd'];
+	$sql .= " and c.lbS1 >= ".$myGrade['s1Std'];
+	$sql .= " and c.lbS2 >= ".$myGrade['s2Std'];
 	$sql .= " and c.lbTo >= ".$myGrade['toStd'];
 
 	$acsql = array();
@@ -157,7 +166,7 @@ function GetPredict( $schools, $classes, $schoolType ) {
 				$acsql[] = "classes='$classes'";
 				$_SESSION['classes'] = $classes;
 			}
-			$sql .= " and ( d.class1 in ($classes) or d.class2 in ($classes) )";
+			$sql .= " and ( d.class1 in ($classes) )";
 		}
 	}
 

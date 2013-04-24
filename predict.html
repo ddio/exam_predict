@@ -84,7 +84,7 @@
 					</div>
 						<div class="quota" data-bind="visible: $root.displayMode() == 'detail'">
 							<strong><span class="long-name">名額</span>異動</strong><br />
-							<span data-bind="text: p2ExpectedPass"></span>-<span data-bind="text: acceptNum"></span>
+							<span data-bind="text: '??'"></span>-<span data-bind="text: '??'"></span>
 						</div>
 						<!-- ko if: p1Subject -->
 						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail'">
@@ -136,9 +136,6 @@
 							</dl>
 						</div>
 						<!-- /ko -->
-						<div class="toeic" data-bind="visible: toeic == 1 && $root.displayMode() == 'detail'">
-							<strong>有</strong><br />TOEIC<span class="long-name"><br />第二階段<br />加分</span>
-						</div>
 				</div>
 				<!-- /ko -->
 			</div>

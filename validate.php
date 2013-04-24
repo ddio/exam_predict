@@ -54,16 +54,16 @@ if( $phase == 1 ) {
 	$ch = intval( GetPara('ch', -1) );
 	$en = intval( GetPara('en', -1) );
 	$ma = intval( GetPara('ma', -1) );
-	$na = intval( GetPara('na', -1) );
-	$so = intval( GetPara('so', -1) );
+	$s1 = intval( GetPara('s1', -1) );
+	$s2 = intval( GetPara('s2', -1) );
 	$phone = $_SESSION['phone'];
 
-	if( $ch < 0 || $en < 0 || $ma < 0 || $na < 0 || $so < 0 ) {
+	if( $ch < 0 || $en < 0 || $ma < 0 || $s1 < 0 || $s2 < 0 ) {
 		ToHome();
 	}
 
 	$gradeSql = 'update accounts set '.
-		"ch=$ch, en=$en, ma=$ma, na=$na, so=$so where phone='$phone'";
+		"ch=$ch, en=$en, ma=$ma, s1=$s1, s2=$s2 where phone='$phone'";
 	$handle = $PredictDB->prepare( $gradeSql );
 	$handle->execute();
 
@@ -74,11 +74,11 @@ if( $phase == 1 ) {
 	$_SESSION['enStd'] = GetStd( 'en', $en );
 	$_SESSION['ma'] = $ma;
 	$_SESSION['maStd'] = GetStd( 'ma', $ma );
-	$_SESSION['na'] = $na;
-	$_SESSION['naStd'] = GetStd( 'na', $na );
-	$_SESSION['so'] = $so;
-	$_SESSION['soStd'] = GetStd( 'so', $so );
-	$_SESSION['toStd'] = GetStd( 'to', $ch+$en+$ma+$na+$so );
+	$_SESSION['s1'] = $s1;
+	$_SESSION['s1Std'] = GetStd( 's1', $s1 );
+	$_SESSION['s2'] = $s2;
+	$_SESSION['s2Std'] = GetStd( 's2', $s2 );
+	$_SESSION['toStd'] = GetStd( 'to', $ch+$en+$ma+$s1+$s2 );
 
 	header( 'Location: predict.html' );
 
