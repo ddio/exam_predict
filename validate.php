@@ -56,6 +56,7 @@ if( $phase == 1 ) {
 	$ma = intval( GetPara('ma', -1) );
 	$s1 = intval( GetPara('s1', -1) );
 	$s2 = intval( GetPara('s2', -1) );
+	$classes = intval( GetPara('classes', 1) );
 	$phone = $_SESSION['phone'];
 
 	if( $ch < 0 || $en < 0 || $ma < 0 || $s1 < 0 || $s2 < 0 ) {
@@ -79,6 +80,7 @@ if( $phase == 1 ) {
 	$_SESSION['s2'] = $s2;
 	$_SESSION['s2Std'] = GetStd( 's2', $s2 );
 	$_SESSION['toStd'] = GetStd( 'to', $ch+$en+$ma+$s1+$s2 );
+	$_SESSION['classes'] = $classes;
 
 	header( 'Location: predict.html' );
 

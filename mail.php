@@ -26,13 +26,9 @@ function genHtml() {
 		<div class="title">
 			<span style="font-size:1.2em;color:#f90;"><?php echo $in['schoolName']?></span> 
 			<span style="font-size:1.2em;color:#f90;"><?php echo $in['departmentName']?></span>
-			<?php if ( $result['dist']['min'] < 1 ): ?>
+			<?php if ( $result['dist']['min'] <= 1 ): ?>
 				<strong style="font-size:0.9em;color:red;"><span class="long-name">(錄取</span>邊緣<span class="long-name">)</span></strong>
 			<?php endif; ?>
-		</div>
-		<div class="quota" style="float:left;width:13%;">
-			<strong><span class="long-name">名額</span>異動</strong><br />
-			<span><?php echo '??'?></span>-<span><? echo '??' ?></span>
 		</div>
 		<?php for( $phase = 1; $phase <= 5; $phase++ ) : ?>
 		<?php $p = 'p'.$phase; ?>

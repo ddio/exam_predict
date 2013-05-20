@@ -37,28 +37,22 @@ $StdMap = array(
 
 
 $SubjectMap = array( '國'=>'ch', '英'=>'en', '數'=>'ma', '一'=>'s1', '二'=>'s2' );
-/*
-$ClassMap = array( 
-	1 => '大眾傳播學群',
-	2 => '工程學群',
-	3 => '文史哲學群',
-	4 => '外語學群',
-	5 => '生命科學學群',	//5
-	6 => '地球與環境學群',
-	7 => '法政學群',
-	8 => '社會與心理學群',
-	9 => '建築與設計學群',
-	10 => '財經學群',	//10
-	11 => '教育學群',
-	12 => '資訊學群',
-	13 => '生物資源學群',
-	14 => '管理學群',
-	15 => '數理化學群',	//15
-	16 => '醫藥衛生學群',
-	17 => '藝術學群',
-	18 => '遊憩與運動學群',
-	19 => '不分系學群' );
- */
+
+function GetClasses() {
+
+	global $PredictDB;
+	$ret = array();
+	$sql = 'SELECT distinct id, name FROM classes order by id;';
+
+	$queryResult = $PredictDB->prepare($sql);
+	$queryResult->execute();
+
+	while( $qRes = $queryResult->fetch( PDO::FETCH_ASSOC ) ) {
+		$ret[$qRes['id']] = $qRes['name'];
+	}
+
+	return $ret;
+}
 
 function ToHome() {
 	header( 'Location: user.html' );
@@ -96,7 +90,7 @@ function PassPhase( $phase, $row, $grade ) {
 			}
 		}
 
-		return ($myGrade - $row[$lbCol])/(count($subjects)-1);
+		return ($myGrade - $row[$lbCol]);///(count($subjects)-1);
 	} else {
 		return null;
 	}
@@ -112,21 +106,23 @@ function SortPredict( $p1, $p2 ) {
 	}
 }
 
+define( 'LOW_BOUND', -2 );
+
 function GetPredict( $schools, $classes, $schoolType ) {
 
 	global $PredictDB;
 	global $RECORD_LIMIT;
 
 	$myGrade = array(
-		'ch' => $_SESSION['ch']+1,
+		'ch' => $_SESSION['ch'],
 		'chStd' => $_SESSION['chStd'],
-		'en' => $_SESSION['en']+1,
+		'en' => $_SESSION['en'],
 		'enStd' => $_SESSION['enStd'],
-		'ma' => $_SESSION['ma']+1,
+		'ma' => $_SESSION['ma'],
 		'maStd' => $_SESSION['maStd'],
-		's1' => $_SESSION['s1']+1,
+		's1' => $_SESSION['s1'],
 		's1Std' => $_SESSION['s1Std'],
-		's2' => $_SESSION['s2']+1,
+		's2' => $_SESSION['s2'],
 		's2Std' => $_SESSION['s2Std'],
 		'toStd' => $_SESSION['toStd']
 	);
@@ -205,24 +201,24 @@ function GetPredict( $schools, $classes, $schoolType ) {
 		$allDist = array();
 		for( $phase = 1; $phase <= 5; $phase++ ) {
 			$allDist[$phase] = PassPhase( $phase, $qRes, $myGrade );
-			if( $allDist[$phase] !== null && $allDist[$phase] < 0 ) {
+			if( $allDist[$phase] !== null && $allDist[$phase] < LOW_BOUND ) {
 				$pass = false;
 				break;
 			}
 		}
 		if( $qRes['p0Lb'] !== null ) {
-			$allDist[0] = ($myGrade['to'] - $qRes['p0Lb'])/5;
-			if( $allDist[0] < 0 ) $pass = false;
+			$allDist[0] = ($myGrade['to'] - $qRes['p0Lb']);
+			if( $allDist[0] < LOW_BOUND ) $pass = false;
 		} else {
-			$allDist[0] = 0;
+			$allDist[0] = LOW_BOUND;
 		}
 
 		if( $pass ) {
-			$minDist = 15;
+			$minDist = 15*5;
 			$seeDist = 0;
 			$toDist = 0;
 			for( $i = 1; $i <= 5; $i++ ) {
-				if( $allDist[$i] !== null && $allDist[$i] >= 0 ) {
+				if( $allDist[$i] !== null && $allDist[$i] >= LOW_BOUND ) {
 					if( $minDist > $allDist[$i] ) 
 						$minDist = $allDist[$i];
 					$seeDist++;

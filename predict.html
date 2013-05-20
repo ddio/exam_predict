@@ -21,7 +21,6 @@
 		<div class="wrapper row">
 			<div class="menu clearfix">
 				<a class="item" href="#" data-bind="click: sendMail">郵寄分析結果</a>
-				<a class="item short-name" href="#" data-bind="click: showCla">選學群</a>
 				<a class="item short-name" href="#" data-bind="click: showTyp">選學校類型</a>
 				<a class="item short-name" href="#" data-bind="click: showSch">選學校</a>
 				<a class="item" href="#" data-bind="click: showBri, visible: displayMode() == 'detail'">簡略資訊</a>
@@ -34,18 +33,6 @@
 			</div>
 
 			<div id="classifier" class="columns four">
-				<div class="cwrapper">
-					<p class="title long-name">學群</p>
-					<div class="content">
-						<input class="filter" placeholder="依名稱過濾" data-bind="value: classesKeyWord, valueUpdate: 'keyup'"><br>
-						<!-- ko foreach: classes -->
-						<!-- ko if: !hide() -->
-						<input type="checkbox" data-bind="checked: checked, attr: {'id': 'sel1-cla-'+cid}">
-						<label data-bind="text: name, attr: {for: 'sel1-cla-'+cid}, css: { checked: checked }"></label><br>
-						<!-- /ko -->
-						<!-- /ko -->
-					</div>
-				</div>
 				<div class="cwrapper">
 					<p class="title long-name">類型</p>
 					<div class="content">
@@ -80,12 +67,8 @@
 					<div class="title">
 						<span data-bind="text: schoolName"> </span> 
 						<span data-bind="text: departmentName"> </span>
-						<strong data-bind="visible: $parent.dist.min < 1"><span class="long-name">(錄取</span>邊緣<span class="long-name">)</span></strong>
+						<strong data-bind="visible: $parent.dist.min <= 1"><span class="long-name">(錄取</span>邊緣<span class="long-name">)</span></strong>
 					</div>
-						<div class="quota" data-bind="visible: $root.displayMode() == 'detail'">
-							<strong><span class="long-name">名額</span>異動</strong><br />
-							<span data-bind="text: '??'"></span>-<span data-bind="text: '??'"></span>
-						</div>
 						<!-- ko if: p1Subject -->
 						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail'">
 							<strong><span class="long-name">篩選</span>順序1</strong><br />
@@ -142,18 +125,6 @@
 		</div>
 	</div>
 	<div class="hide">
-		<div class="cwrapper" id="sel-cla">
-			<p class="title long-name">學群</p>
-			<div class="content">
-				<input class="filter" placeholder="依名稱過濾" data-bind="value: classesKeyWord, valueUpdate: 'keyup'"><br>
-				<!-- ko foreach: classes -->
-				<!-- ko if: !hide() -->
-				<input type="checkbox" data-bind="checked: checked, attr: {'id': 'sel7-cla-'+cid}">
-				<label data-bind="text: name, attr: {for: 'sel7-cla-'+cid}, css: { checked: checked }"></label><br>
-				<!-- /ko -->
-				<!-- /ko -->
-			</div>
-		</div>
 		<div class="cwrapper" id="sel-typ">
 			<p class="title long-name">類型</p>
 			<div class="content">

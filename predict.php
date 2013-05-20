@@ -7,7 +7,7 @@ if( !isset($_SESSION['phase']) || $_SESSION['phase'] != 2 ) {
 }
 
 $schools = GetPara( 'schools', null, 'GET' );
-$classes = GetPara( 'classes', null, 'GET' );
+$classes = $_SESSION['classes'];
 $schoolType = intval( GetPara( 'schoolType', 3, 'GET' ) );
 
 $ret = GetPredict( $schools, $classes, $schoolType );
