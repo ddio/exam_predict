@@ -39,7 +39,26 @@ if( isset( $_POST['pass'] ) && $_POST['pass'] == $Log['password'] ) {
 <?php 
 $r0 = $PredictDB->query('select count(*) from accounts');
 
-$sql = 'select phone, name, email, city, ch, en,ma,s1,s2 from accounts';
+$sql = 'select id, name from classes';
+$cr = $PredictDB->prepare($sql);
+$cr->execute();
+
+$classes = array();
+while( $qCr = $cr->fetch( PDO::FETCH_ASSOC ) ) {
+	$classes[$qCr['id']] = $qCr['name'];
+}
+
+function className( $id ) {
+	global $classes;
+
+	if( isset( $classes[$id] ) ) {
+		return $classes[$id];
+	} else {
+		return '--';
+	}
+}
+
+$sql = 'select phone, name, email, city, ch, en,ma,s1,s2, classes from accounts';
 $result = $PredictDB->prepare($sql);
 $result->execute();
 ?>
@@ -51,6 +70,7 @@ $result->execute();
 			<th>電話</th>
 			<th>email</th>
 			<th>居住地</th>
+			<th>學群</th>
 			<th>國</th>
 			<th>英</th>
 			<th>數</th>
@@ -65,6 +85,7 @@ $result->execute();
 			<td><?php echo $qRes['phone'] ?></td>
 			<td><?php echo $qRes['email'] ?></td>
 			<td><?php echo $qRes['city'] ?></td>
+			<td><?php echo className($qRes['classes']) ?></td>
 			<td><?php echo $qRes['ch'] ?></td>
 			<td><?php echo $qRes['en'] ?></td>
 			<td><?php echo $qRes['ma'] ?></td>

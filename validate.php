@@ -64,7 +64,7 @@ if( $phase == 1 ) {
 	}
 
 	$gradeSql = 'update accounts set '.
-		"ch=$ch, en=$en, ma=$ma, s1=$s1, s2=$s2 where phone='$phone'";
+		"ch=$ch, en=$en, ma=$ma, s1=$s1, s2=$s2, classes='$classes' where phone='$phone'";
 	$handle = $PredictDB->prepare( $gradeSql );
 	$handle->execute();
 
