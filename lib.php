@@ -72,8 +72,8 @@ function GetProbSingle( $subject, $preGrade, $curGrades ) {
 		}
 		$preSumMap = $SumMap[$subject]['pre'];
 		$preLoGrade = 0;
-		while( $preLoGrade < $topGrade ) {
-			if( $preSumMap[ $preLoGrade ] > $curPos ) {
+		while( $preLoGrade < $topGrade-1 ) {
+			if( $preSumMap[ $preLoGrade+1 ] > $curPos ) {
 				$preLoGrade++;
 			} else {
 				break;
@@ -84,7 +84,7 @@ function GetProbSingle( $subject, $preGrade, $curGrades ) {
 		} else if( $preLoGrade < $preGrade ) {
 			$pob = 0;
 		} else {
-			$pob = ( $curPos - $preSumMap[$preLoGrade] ) / 
+			$pob = ( $preSumMap[$preLoGrade] - $curPos ) / 
 					( $preSumMap[$preLoGrade] - $preSumMap[$preLoGrade+1] );
 		}
 
@@ -120,8 +120,8 @@ function GetProbMulti( $subjects, $preGrade, $curGrades ) {
 			}
 			$preSumMap = $SumMap[$subject]['pre'];
 			$preLoGrade = 0;
-			while( $preLoGrade < $topGrade ) {
-				if( $preSumMap[ $preLoGrade ] > $curPos ) {
+			while( $preLoGrade < $topGrade-1 ) {
+				if( $preSumMap[ $preLoGrade+1 ] > $curPos ) {
 					$preLoGrade++;
 				} else {
 					break;
@@ -131,7 +131,7 @@ function GetProbMulti( $subjects, $preGrade, $curGrades ) {
 				$GradeMapCache[ $subject ] = $topGrade;
 			} else {
 				$GradeMapCache[ $subject ] = $preLoGrade + 
-						( $curPos - $preSumMap[$preLoGrade] ) / 
+						( $preSumMap[$preLoGrade] - $curPos ) / 
 						( $preSumMap[$preLoGrade] - $preSumMap[$preLoGrade+1] );
 			}
 		}
