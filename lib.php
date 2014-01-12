@@ -25,38 +25,7 @@ $User = array();
 $RECORD_LIMIT = 50;
 $PredictDB = new PDO('sqlite:../../db/examPredict.sqlite');
 
-// not used..
-$StdMap = array( 
-	'ch' => array( 13,12,11,9,7,0 ),
-	'en' => array( 14,13,10,6,4,0 ),
-	'ma' => array( 12,10, 7,4,3,0 ),
-	'na' => array( 14,13,11,9,7,0 ),
-	'so' => array( 13,11, 9,6,5,0 ),
-	'to' => array( 63,57,47,36,27,0 )
-);
-	
-$SubjectMap = array( '國'=>'ch', '英'=>'en', '數'=>'ma', '自'=>'na', '社'=>'so' );
-$ClassMap = array( 
-	1 => '大眾傳播學群',
-	2 => '工程學群',
-	3 => '文史哲學群',
-	4 => '外語學群',
-	5 => '生命科學學群',	//5
-	6 => '地球與環境學群',
-	7 => '法政學群',
-	8 => '社會與心理學群',
-	9 => '建築與設計學群',
-	10 => '財經學群',	//10
-	11 => '教育學群',
-	12 => '資訊學群',
-	13 => '生物資源學群',
-	14 => '管理學群',
-	15 => '數理化學群',	//15
-	16 => '醫藥衛生學群',
-	17 => '藝術學群',
-	18 => '遊憩與運動學群',
-	19 => '不分系學群' );
-
+require_once( 'def.php' );
 
 function ToHome() {
 	header( 'Location: user.html' );
@@ -79,22 +48,128 @@ function FinishByJson( $jsonArray, $jsonEncodeOpts = 0 ) {
 	echo json_encode( $jsonArray );
 }
 
+function GetProbSingle( $subject, $preGrade, $curGrades ) {
+
+	global $SubjectMap;
+	global $SumMap;
+	global $GradeProbCache;
+
+	if( !isset( $SubjectMap[$subject] ) ) {
+		return null;
+	}
+
+	$topGrade = $subject == '總' ? 75 : 15;
+	$subject = $SubjectMap[ $subject ];
+	$curGrade = $curGrades[ $subject ];
+
+	if( !isset( $GradeProbCache[$subject] ) ) {
+		$GradeProbCache[$subject] = array();
+	}
+	if( !isset( $GradeProbCache[$subject][$preGrade] ) ) {
+		$curPos = 0;
+		if( $curGrade < $topGrade ) {
+			$curPos = $SumMap[$subject]['cur'][ $curGrade+1 ];
+		}
+		$preSumMap = $SumMap[$subject]['pre'];
+		$preLoGrade = 0;
+		while( $preLoGrade < $topGrade ) {
+			if( $preSumMap[ $preLoGrade ] > $curPos ) {
+				$preLoGrade++;
+			} else {
+				break;
+			}
+		}
+		if( $preLoGrade > $preGrade || $preLoGrade == $topGrade ) {
+			$pob =  1;
+		} else if( $preLoGrade < $preGrade ) {
+			$pob = 0;
+		} else {
+			$pob = ( $curPos - $preSumMap[$preLoGrade] ) / 
+					( $preSumMap[$preLoGrade] - $preSumMap[$preLoGrade+1] );
+		}
+
+		$GradeProbCache[$subject][$preGrade] = $pob;
+	}
+	
+	return $GradeProbCache[$subject][$preGrade];
+}
+
+function GetProbMulti( $subjects, $preGrade, $curGrades ) {
+
+	global $SubjectMap;
+	global $SumMap;
+	global $GradeMapCache;
+
+	$curSum = 0;
+	$totalTopGrade = 0;
+
+	foreach( $subjects as $subject ) {
+		if( !isset( $SubjectMap[ $subject ] ) ) {
+			continue;
+		}
+		$topGrade = $subject == '總' ? 75 : 15;
+		$subject = $SubjectMap[ $subject ];
+		$curGrade = $curGrades[ $subject ];
+
+		$totalTopGrade += $topGrade;
+
+		if( !isset( $GradeMapCache[ $subject ] ) ) {
+			$curPos = 0;
+			if( $curGrade < $topGrade ) {
+				$curPos = $SumMap[$subject]['cur'][ $curGrade+1 ];
+			}
+			$preSumMap = $SumMap[$subject]['pre'];
+			$preLoGrade = 0;
+			while( $preLoGrade < $topGrade ) {
+				if( $preSumMap[ $preLoGrade ] > $curPos ) {
+					$preLoGrade++;
+				} else {
+					break;
+				}
+			}
+			if( $preLoGrade == $topGrade ) {
+				$GradeMapCache[ $subject ] = $topGrade;
+			} else {
+				$GradeMapCache[ $subject ] = $preLoGrade + 
+						( $curPos - $preSumMap[$preLoGrade] ) / 
+						( $preSumMap[$preLoGrade] - $preSumMap[$preLoGrade+1] );
+			}
+		}
+
+		$curSum += $GradeMapCache[ $subject ];
+	}
+
+	$curDifprev = $curSum - $preGrade;
+
+	if( $curDifprev >= 1 || $curSum == $totalTopGrade ) {
+		return 1;
+	} else if( $curDifprev == 0 ) {
+		return 0.7;
+	} else if( $curDifprev >= -1 ) {
+		return 0.4;
+	} else {
+		return 0;
+	}
+}
+
 function PassPhase( $phase, $row, $grade ) {
 	global $SubjectMap;
+	global $GradeProbCache;
+
 	$subjectCol = "p$phase".'Subject';
 	$lbCol = "p$phase"."Lb";
 	$myGrade = 0;
 
-	if( $row[$subjectCol] != null ) {
-		$subjectStr = str_replace( '總', '國+英+數+自+社', $row[$subjectCol] );
-		$subjects = explode( '+', $subjectStr );
-		foreach( $subjects as $subject ) {
-			if( isset( $SubjectMap[$subject] ) ) {
-				$myGrade += $grade[ $SubjectMap[ $subject ] ];
-			}
-		}
+	if( $row[$subjectCol] == null ) {
+		return null;
+	}
+	
+	$subjects = explode( '+', $row[$subjectCol] );
 
-		return ($myGrade - $row[$lbCol])/count($subjects);
+	if( count( $subjects ) == 1 ) {
+		return GetProbSingle( $subjects[0], $row[ $lbCol ], $grade );
+	} else if( count( $subjects ) > 1 ) {
+		return GetProbMulti( $subjects, $row[ $lbCol ], $grade );
 	} else {
 		return null;
 	}
@@ -116,15 +191,15 @@ function GetPredict( $schools, $classes, $schoolType ) {
 	global $RECORD_LIMIT;
 
 	$myGrade = array(
-		'ch' => $_SESSION['ch']+1,
+		'ch' => $_SESSION['ch'],
 		'chStd' => $_SESSION['chStd'],
-		'en' => $_SESSION['en']+1,
+		'en' => $_SESSION['en'],
 		'enStd' => $_SESSION['enStd'],
-		'ma' => $_SESSION['ma']+1,
+		'ma' => $_SESSION['ma'],
 		'maStd' => $_SESSION['maStd'],
-		'na' => $_SESSION['na']+1,
+		'na' => $_SESSION['na'],
 		'naStd' => $_SESSION['naStd'],
-		'so' => $_SESSION['so']+1,
+		'so' => $_SESSION['so'],
 		'soStd' => $_SESSION['soStd'],
 		'toStd' => $_SESSION['toStd']
 	);
@@ -196,32 +271,29 @@ function GetPredict( $schools, $classes, $schoolType ) {
 		$allDist = array();
 		for( $phase = 1; $phase <= 5; $phase++ ) {
 			$allDist[$phase] = PassPhase( $phase, $qRes, $myGrade );
-			if( $allDist[$phase] !== null && $allDist[$phase] < 0 ) {
+			if( $allDist[$phase] !== null && $allDist[$phase] <= 0 ) {
 				$pass = false;
 				break;
 			}
 		}
 		if( $qRes['p0Lb'] !== null ) {
-			$allDist[0] = ($myGrade['to'] - $qRes['p0Lb'])/5;
-			if( $allDist[0] < 0 ) $pass = false;
+			$allDist[0] = GetProbSingle( '總', $qRes['p0Lb'], $myGrade );
+			if( $allDist[0] <= 0 ) $pass = false;
 		} else {
-			$allDist[0] = 0;
+			$allDist[0] = 1;
 		}
 
 		if( $pass ) {
-			$minDist = 15;
-			$seeDist = 0;
-			$toDist = 0;
+			$minDist = 1;
+			$toDist = 1;
 			for( $i = 1; $i <= 5; $i++ ) {
 				if( $allDist[$i] !== null && $allDist[$i] >= 0 ) {
 					if( $minDist > $allDist[$i] ) 
 						$minDist = $allDist[$i];
-					$seeDist++;
-					$toDist += $allDist[$i];
+					$toDist *= $allDist[$i];
 				}
 			}
-			$seeDist = $seeDist == 0 ? 1 : $seeDist;
-			$allDist['to'] = $toDist/$seeDist;
+			$allDist['to'] = $toDist;
 			$allDist['min'] = $minDist;
 			$predictions[] = array(
 				'dist' => $allDist,
