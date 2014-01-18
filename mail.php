@@ -21,14 +21,20 @@ function genHtml() {
 	<p id="not-found"> 查無結果 </p>
 <?php else: ?>
 <?php foreach( $results as $result ): ?>
-<?php $in = $result['info']; ?>
+<?php 
+$in = $result['info'];
+$dst = $result['dist']; 
+$pb='font-size:0.9em;padding:1px 3px;color:#fff;';
+$pbl=$pb.'border-top-left-radius:3px;border-bottom-left-radius:3px;';
+$pbr=$pb.'border-top-right-radius:3px;border-bottom-right-radius:3px;';
+$pbls=array( $pbl.'background-color:#f00;', $pbl.'background-color:#f00;', $pbl.'background-color:#fa0;', $pbl.'background-color:#fa0;', $pbl.'background-color:#0f0;color:#000;' );
+$pbrs=array( $pbr.'background-color:#f00;', $pbr.'background-color:#fa0;', $pbr.'background-color:#fa0;', $pbr.'background-color:#0f0;color:#000;', $pbr.'background-color:#0f0;color:#000;' );
+?>
 	<div class="row" style="margin: 10px;0px;">
 		<div class="title">
 			<span style="font-size:1.2em;color:#f90;"><?php echo $in['schoolName']?></span> 
 			<span style="font-size:1.2em;color:#f90;"><?php echo $in['departmentName']?></span>
-			<?php if ( $result['dist']['min'] < 1 ): ?>
-				<strong style="font-size:0.9em;color:red;"><span class="long-name">(錄取</span>邊緣<span class="long-name">)</span></strong>
-			<?php endif; ?>
+			<span style="<?php echo $pbls[$dst['level']]?>">機率</span><span style="<?php echo $pbrs[$dst['level']]?>"><?php echo $dst['text']?></span>
 		</div>
 		<div class="quota" style="float:left;width:13%;">
 			<strong><span class="long-name">名額</span>異動</strong><br />
