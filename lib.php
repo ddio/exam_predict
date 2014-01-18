@@ -310,6 +310,14 @@ function GetPredict( $schools, $classes, $schoolType ) {
 		$predictionsLimited = $predictions;
 	}
 
+	$lvToStr = array( '極低', '低', '普通', '高', '極高' );
+
+	foreach( $predictionsLimited as &$aPrediction ) {
+		$totalP = floor( ($aPrediction['dist']['to']*100)/25 );
+		$totalP = $totalP > 4 ? 4 : $totalP;
+		$aPrediction['dist'] = array( 'level' => $totalP, 'text' => $lvToStr[$totalP] );
+	}
+
 	return $predictionsLimited;
 }
 

@@ -80,8 +80,9 @@
 					<div class="title">
 						<span data-bind="text: schoolName"> </span> 
 						<span data-bind="text: departmentName"> </span>
-						<strong>(<span data-bind="text: ($parent.dist.to*100).toFixed(2)"></span>%)</strong>
-						<!--						<strong data-bind="visible: $parent.dist.min < 1"><span class="long-name">(錄取</span>邊緣<span class="long-name">)</span></strong>-->
+						<!-- ko with: $parent.dist -->
+						<span data-bind="attr: { 'class': 'pb-l pb-l-'+level}">機率</span><span data-bind="attr: { 'class': 'pb-r pb-r-'+level}, text: text "></span>
+						<!-- /ko -->
 					</div>
 						<div class="quota" data-bind="visible: $root.displayMode() == 'detail'">
 							<strong><span class="long-name">名額</span>異動</strong><br />
