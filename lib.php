@@ -23,7 +23,7 @@ if( !isset( $_SESSION['phase'] ) ) {
 
 $User = array();
 $RECORD_LIMIT = 50;
-$PredictDB = new PDO('sqlite:../../db/examPredict.sqlite');
+$PredictDB = new PDO('sqlite:../../db/2014examPredict.sqlite');
 
 require_once( 'def.php' );
 
@@ -176,10 +176,37 @@ function PassPhase( $phase, $row, $grade ) {
 }
 
 function SortPredict( $p1, $p2 ) {
+
 	if( $p1['info']['p0Lb'] == $p2['info']['p0Lb'] ) {
-		if( $p1['dist']['to'] == $p2['dist']['to'] ) 
-			return 0;
-		return $p1['dist']['to'] > $p2['dist']['to'] ? 1 : -1; 
+
+		if( $p1['dist']['to'] == $p2['dist']['to'] ) {
+
+			$p1N = str_replace( '總', '++++', $p1['info']['p1Subject'] );
+			$p1N = count( explode( '+', $p1N ) );
+			$p1N = $p1N == 0 ? 5 : $p1N;
+			
+			$p2N = str_replace( '總', '++++', $p2['info']['p1Subject'] );
+			$p2N = count( explode( '+', $p2N ) );
+			$p2N = $p2N == 0 ? 5 : $p2N;
+			
+			$p1Score = $p1['info']['p1Lb']/$p1N;
+			$p2Score = $p2['info']['p1Lb']/$p2N;
+
+			if( $p1Score == $p2Score ) {
+
+				if( $p1N == $p2N ) {
+					return 0;
+				} else {
+					return $p1N > $p2N ? -1 : 1;
+				}
+			}
+
+			return $p1Score > $p2Score ? -1 : 1;
+
+		} else {
+			return $p1['dist']['to'] > $p2['dist']['to'] ? 1 : -1; 
+		}
+
 	} else {
 		return $p1['info']['p0Lb'] > $p2['info']['p0Lb'] ? -1 : 1;
 	}
@@ -315,7 +342,7 @@ function GetPredict( $schools, $classes, $schoolType ) {
 	foreach( $predictionsLimited as &$aPrediction ) {
 		$totalP = floor( ($aPrediction['dist']['to']*100)/25 );
 		$totalP = $totalP > 4 ? 4 : $totalP;
-		$aPrediction['dist'] = array( 'level' => $totalP, 'text' => $lvToStr[$totalP] );
+		$aPrediction['dist'] = array( 'cheet' => $aPrediction['dist']['to'], 'level' => $totalP, 'text' => $lvToStr[$totalP] );
 	}
 
 	return $predictionsLimited;
