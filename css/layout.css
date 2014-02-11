@@ -159,6 +159,10 @@ img {
 	color: #777;
 }
 
+#school-detail .danger dt {
+	color: red;
+}
+
 #school-detail dd {
 	width: 68%;
 	margin-left: 2%;
@@ -218,6 +222,10 @@ img {
 
 #school-detail .criterion {
 	width: 15%;
+}
+
+#school-detail .criterion.danger {
+	color: red;
 }
 
 #school-detail .toeic {

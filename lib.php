@@ -22,7 +22,7 @@ if( !isset( $_SESSION['phase'] ) ) {
 }
 
 $User = array();
-$RECORD_LIMIT = 50;
+$RECORD_LIMIT = 200;
 $PredictDB = new PDO('sqlite:../../db/2014examPredict.sqlite');
 
 require_once( 'def.php' );
@@ -177,6 +177,16 @@ function PassPhase( $phase, $row, $grade ) {
 
 function SortPredict( $p1, $p2 ) {
 
+	if( $p1['dist']['to'] == $p2['dist']['to'] ) {
+		if( $p1['info']['p0Lb'] == $p2['info']['p0Lb'] ) {
+			return 0;
+		} else {
+			return $p1['info']['p0Lb'] > $p2['info']['p0Lb'] ? -1 : 1;
+		}
+	} else {
+		return $p1['dist']['to'] > $p2['dist']['to'] ? 1 : -1; 
+	}
+/*
 	if( $p1['info']['p0Lb'] == $p2['info']['p0Lb'] ) {
 
 		if( $p1['dist']['to'] == $p2['dist']['to'] ) {
@@ -210,6 +220,7 @@ function SortPredict( $p1, $p2 ) {
 	} else {
 		return $p1['info']['p0Lb'] > $p2['info']['p0Lb'] ? -1 : 1;
 	}
+ */
 }
 
 function GetPredict( $schools, $classes, $schoolType ) {
@@ -340,9 +351,20 @@ function GetPredict( $schools, $classes, $schoolType ) {
 	$lvToStr = array( '極低', '低', '普通', '高', '極高' );
 
 	foreach( $predictionsLimited as &$aPrediction ) {
+
+		$aPrediction['info']['p1Danger'] = $aPrediction['dist'][1] <= 0.8;
+		$aPrediction['info']['p2Danger'] = $aPrediction['dist'][2] <= 0.8;
+		$aPrediction['info']['p3Danger'] = $aPrediction['dist'][3] <= 0.8;
+		$aPrediction['info']['p4Danger'] = $aPrediction['dist'][4] <= 0.8;
+		$aPrediction['info']['p5Danger'] = $aPrediction['dist'][5] <= 0.8;
+
 		$totalP = floor( ($aPrediction['dist']['to']*100)/25 );
 		$totalP = $totalP > 4 ? 4 : $totalP;
-		$aPrediction['dist'] = array( 'cheet' => $aPrediction['dist']['to'], 'level' => $totalP, 'text' => $lvToStr[$totalP] );
+		$aPrediction['dist'] = array( 
+			'cheet' => $aPrediction['dist']['to'],
+			'level' => $totalP, 
+			'text' => $lvToStr[$totalP] 
+		);
 	}
 
 	return $predictionsLimited;

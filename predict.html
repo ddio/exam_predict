@@ -81,7 +81,8 @@
 						<span data-bind="text: schoolName"> </span> 
 						<span data-bind="text: departmentName"> </span>
 						<!-- ko with: $parent.dist -->
-						<span data-bind="attr: { 'class': 'pb-l pb-l-'+level}">機率</span><span data-bind="attr: { 'class': 'pb-r pb-r-'+level}, text: text "></span>
+						<!--<span data-bind="attr: { 'class': 'pb-l pb-l-'+level}">機率</span><span data-bind="attr: { 'class': 'pb-r pb-r-'+level}, text: text + '(' + cheet*100 + '%)' "></span>-->
+						<span data-bind="attr: { 'class': 'pb-l pb-l-'+level}">機率</span><span data-bind="attr: { 'class': 'pb-r pb-r-'+level}, text: text"></span>
 						<!-- /ko -->
 					</div>
 						<div class="quota" data-bind="visible: $root.displayMode() == 'detail'">
@@ -89,7 +90,7 @@
 							<span data-bind="text: p2ExpectedPass"></span>-<span data-bind="text: acceptNum"></span>
 						</div>
 						<!-- ko if: p1Subject -->
-						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail'">
+						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail', css: { danger: p1Danger }">
 							<strong><span class="long-name">篩選</span>順序1</strong><br />
 							<dl>
 								<dt> 科目 </dt> <dd data-bind="text: p1Subject"></dd>
@@ -99,7 +100,7 @@
 						</div>
 						<!-- /ko -->
 						<!-- ko if: p2Subject -->
-						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail'">
+						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail', css: { danger: p2Danger }">
 							<strong><span class="long-name">篩選</span>順序2</strong><br />
 							<dl>
 								<dt> 科目 </dt> <dd data-bind="text: p2Subject"></dd>
@@ -109,7 +110,7 @@
 						</div>
 						<!-- /ko -->
 						<!-- ko if: p3Subject -->
-						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail'">
+						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail', css: { danger: p3Danger }">
 							<strong><span class="long-name">篩選</span>順序3</strong><br />
 							<dl>
 								<dt> 科目 </dt> <dd data-bind="text: p3Subject"></dd>
@@ -119,7 +120,7 @@
 						</div>
 						<!-- /ko -->
 						<!-- ko if: p4Subject -->
-						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail'">
+						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail', css: { danger: p4Danger }">
 							<strong><span class="long-name">篩選</span>順序4</strong><br />
 							<dl>
 								<dt> 科目 </dt> <dd data-bind="text: p4Subject"></dd>
@@ -129,7 +130,7 @@
 						</div>
 						<!-- /ko -->
 						<!-- ko if: p5Subject -->
-						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail'">
+						<div class="criterion" data-bind="visible: $root.displayMode() == 'detail', css: { danger: p5Danger }">
 							<strong><span class="long-name">篩選</span>順序5</strong><br />
 							<dl>
 								<dt> 科目 </dt> <dd data-bind="text: p5Subject"></dd>
