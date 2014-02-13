@@ -322,7 +322,7 @@ function GetPredict( $schools, $classes, $schoolType ) {
 		
 		if( $qRes['p0Lb'] !== null ) {
 			$allDist[0] = GetProbSingle( '總', $qRes['p0Lb'], $myGrade );
-			if( $allDist[0] <= 0 ) $pass = false;
+//			if( $allDist[0] <= 0 ) $pass = false;
 		} else {
 			$allDist[0] = 1;
 		}
