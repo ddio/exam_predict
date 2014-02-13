@@ -186,6 +186,7 @@ function SortPredict( $p1, $p2 ) {
 	} else {
 		return $p1['dist']['to'] > $p2['dist']['to'] ? 1 : -1; 
 	}
+
 /*
 	if( $p1['info']['p0Lb'] == $p2['info']['p0Lb'] ) {
 
@@ -227,6 +228,7 @@ function GetPredict( $schools, $classes, $schoolType ) {
 
 	global $PredictDB;
 	global $RECORD_LIMIT;
+	global $DEBUG;
 
 	$myGrade = array(
 		'ch' => $_SESSION['ch'],
@@ -285,6 +287,8 @@ function GetPredict( $schools, $classes, $schoolType ) {
 		}
 	}
 
+	$acsql[] = 'updated_at = '.time();
+
 	if( count($acsql) > 0 ) {
 		$isql = 'update accounts set '.implode( ',', $acsql )." where phone='".$_SESSION['phone']."'";
 		$handle = $PredictDB->prepare( $isql );
@@ -307,6 +311,7 @@ function GetPredict( $schools, $classes, $schoolType ) {
 	while( $qRes = $queryResult->fetch( PDO::FETCH_ASSOC ) ) {
 		$pass = true;
 		$allDist = array();
+
 		for( $phase = 1; $phase <= 5; $phase++ ) {
 			$allDist[$phase] = PassPhase( $phase, $qRes, $myGrade );
 			if( $allDist[$phase] !== null && $allDist[$phase] <= 0 ) {
@@ -314,6 +319,7 @@ function GetPredict( $schools, $classes, $schoolType ) {
 				break;
 			}
 		}
+		
 		if( $qRes['p0Lb'] !== null ) {
 			$allDist[0] = GetProbSingle( '總', $qRes['p0Lb'], $myGrade );
 			if( $allDist[0] <= 0 ) $pass = false;
@@ -361,7 +367,7 @@ function GetPredict( $schools, $classes, $schoolType ) {
 		$totalP = floor( ($aPrediction['dist']['to']*100)/25 );
 		$totalP = $totalP > 4 ? 4 : $totalP;
 		$aPrediction['dist'] = array( 
-			'cheet' => $aPrediction['dist']['to'],
+//			'cheet' => $aPrediction['dist']['to'],
 			'level' => $totalP, 
 			'text' => $lvToStr[$totalP] 
 		);

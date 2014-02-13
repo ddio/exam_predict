@@ -39,7 +39,7 @@ if( isset( $_POST['pass'] ) && $_POST['pass'] == $Log['password'] ) {
 <?php 
 $r0 = $PredictDB->query('select count(*) from accounts');
 
-$sql = 'select phone, name, email, city, ch, en,ma,na,so from accounts';
+$sql = 'select phone, name, email, city, ch, en,ma,na,so, updated_at from accounts order by updated_at asc';
 $result = $PredictDB->prepare($sql);
 $result->execute();
 ?>
@@ -56,6 +56,7 @@ $result->execute();
 			<th>數</th>
 			<th>自</th>
 			<th>社</th>
+			<th>查詢時間</th>
 		</tr>
 		</thead>
 		<tbody>
@@ -70,6 +71,7 @@ $result->execute();
 			<td><?php echo $qRes['ma'] ?></td>
 			<td><?php echo $qRes['na'] ?></td>
 			<td><?php echo $qRes['so'] ?></td>
+			<td><?php echo date( 'm/d H:i:s', $qRes['updated_at']) ?></td>
 		</tr>
 <?php endwhile; ?>
 		</tbody>
